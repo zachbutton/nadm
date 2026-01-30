@@ -205,3 +205,61 @@ cmd_clone() {
     echo -e "${CYAN}Done!${RESET} Dotfiles cloned from ${url}"
     echo "Your working copy is now on top of '${bookmark_name}'."
 }
+
+show_main_menu() {
+    menu_select "nadm - Not A Dotfile Manager" \
+        "init   Create a fresh dotfile repo" \
+        "clone  Set up from an existing remote"
+
+    case $MENU_RESULT in
+        0) cmd_init ;;
+        1)
+            echo -n "Enter remote URL: "
+            read -r url
+            cmd_clone "$url"
+            ;;
+    esac
+}
+
+main() {
+    # Parse args from NADM_ARGS env var (set by wrappers)
+    local args="${NADM_ARGS:-}"
+
+    # Also accept direct args for testing
+    [[ -n "$1" ]] && args="$*"
+
+    # Parse command
+    local cmd="${args%% *}"
+    local rest="${args#* }"
+    [[ "$cmd" == "$rest" ]] && rest=""
+
+    case "$cmd" in
+        init)
+            cmd_init
+            ;;
+        clone)
+            cmd_clone "$rest"
+            ;;
+        ""|help|--help|-h)
+            if [[ -t 0 && -t 1 ]]; then
+                # Interactive terminal - show menu
+                show_main_menu
+            else
+                # Non-interactive - show usage
+                echo "Usage: nadm <command>"
+                echo ""
+                echo "Commands:"
+                echo "  init          Create a fresh dotfile repo in ~"
+                echo "  clone <url>   Set up from an existing remote"
+            fi
+            ;;
+        *)
+            error "Unknown command: $cmd"
+            ;;
+    esac
+}
+
+# Run if executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
