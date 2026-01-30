@@ -200,7 +200,7 @@ cmd_clone() {
     fi
 
     # Create new working copy on selected bookmark
-    jj new "$bookmark_name"
+    jj new "$bookmark_name" || error "Failed to create working copy on '${bookmark_name}'."
 
     echo -e "${CYAN}Done!${RESET} Dotfiles cloned from ${url}"
     echo "Your working copy is now on top of '${bookmark_name}'."
