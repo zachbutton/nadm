@@ -151,3 +151,57 @@ cmd_init() {
     echo -e "${CYAN}Done!${RESET} Your home directory is now a jj repo."
     echo "Use 'jj add <file>' to start tracking dotfiles."
 }
+
+cmd_clone() {
+    local url="$1"
+
+    [[ -z "$url" ]] && error "Usage: nadm clone <url>"
+
+    echo -e "${BOLD}Cloning dotfiles...${RESET}"
+
+    # Run shared setup first
+    do_setup
+
+    # Add remote and fetch
+    cd "$HOME"
+    jj git remote add origin "$url" || error "Failed to add remote. Check the URL."
+    jj git fetch || error "Failed to fetch from remote. Check your network/credentials."
+
+    # Get bookmarks
+    local bookmarks
+    bookmarks=$(jj bookmark list -a 2>/dev/null) || true
+
+    [[ -z "$bookmarks" ]] && error "No bookmarks found on remote."
+
+    # Count bookmarks
+    local count
+    count=$(echo "$bookmarks" | wc -l | tr -d ' ')
+
+    local bookmark_name
+    if [[ "$count" -eq 1 ]]; then
+        # Single bookmark - use it directly
+        bookmark_name=$(echo "$bookmarks" | awk '{print $1}' | sed 's/:$//')
+    else
+        # Multiple bookmarks - show menu
+        echo
+        echo "Multiple bookmarks found. Select one:"
+        echo
+
+        # Convert bookmarks to array
+        local -a bookmark_lines
+        while IFS= read -r line; do
+            bookmark_lines+=("$line")
+        done <<< "$bookmarks"
+
+        menu_select "Select bookmark:" "${bookmark_lines[@]}"
+
+        # Extract bookmark name from selected line
+        bookmark_name=$(echo "${bookmark_lines[$MENU_RESULT]}" | awk '{print $1}' | sed 's/:$//')
+    fi
+
+    # Create new working copy on selected bookmark
+    jj new "$bookmark_name"
+
+    echo -e "${CYAN}Done!${RESET} Dotfiles cloned from ${url}"
+    echo "Your working copy is now on top of '${bookmark_name}'."
+}
