@@ -13,7 +13,7 @@ try {
         script = readFileSync(join(__dirname, '..', 'core.sh'), 'utf8');
     }
 } catch (e) {
-    console.error('Error: Could not load core.sh');
+    console.error('Error: Could not load core.sh:', e.message);
     process.exit(1);
 }
 
