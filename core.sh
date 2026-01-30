@@ -24,6 +24,9 @@ menu_select() {
     local selected=0
     local count=${#options[@]}
 
+    # Validate we have at least one option
+    [[ $count -eq 0 ]] && error "menu_select requires at least one option"
+
     # Hide cursor
     printf '\033[?25l'
 
