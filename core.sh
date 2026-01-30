@@ -107,3 +107,47 @@ menu_select() {
 
     MENU_RESULT=$selected
 }
+
+# Shared setup (used by both init and clone)
+do_setup() {
+    cd "$HOME"
+
+    # Guards
+    [[ -d ".jj" ]] && error "Already initialized. Remove ~/.jj to re-initialize."
+    [[ -f ".gitignore" ]] && error "~/.gitignore already exists."
+
+    # Check jj is installed
+    command -v jj >/dev/null 2>&1 || error "jj is not installed. See https://github.com/martinvonz/jj"
+
+    # Create .gitignore with * (ignore everything)
+    echo '*' > .gitignore
+
+    # Initialize jj repo
+    jj git init --no-colocate
+
+    # Create .nadm directory
+    mkdir -p .nadm
+
+    # Create config with add alias
+    cat > .nadm/config.toml << 'EOF'
+[aliases]
+add = ["file", "track", "--include-ignored"]
+EOF
+
+    # Remove auto-generated config if it exists
+    rm -f .jj/repo/config.toml
+
+    # Symlink config
+    ln -s "$HOME/.nadm/config.toml" .jj/repo/config.toml
+
+    # Track our files
+    jj add .gitignore
+    jj add .nadm/config.toml
+}
+
+cmd_init() {
+    echo -e "${BOLD}Initializing nadm...${RESET}"
+    do_setup
+    echo -e "${CYAN}Done!${RESET} Your home directory is now a jj repo."
+    echo "Use 'jj add <file>' to start tracking dotfiles."
+}
