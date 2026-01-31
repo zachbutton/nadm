@@ -178,9 +178,12 @@ cmd_clone() {
     count=$(echo "$bookmarks" | wc -l | tr -d ' ')
 
     local bookmark_name
+    # Strip ANSI codes: \x1b\[[0-9;]*m
+    strip_ansi() { sed $'s/\x1b\\[[0-9;]*m//g'; }
+
     if [[ "$count" -eq 1 ]]; then
         # Single bookmark - use it directly
-        bookmark_name=$(echo "$bookmarks" | awk '{print $1}' | sed 's/:$//')
+        bookmark_name=$(echo "$bookmarks" | awk '{print $1}' | sed 's/:$//' | strip_ansi)
     else
         # Multiple bookmarks - show menu
         echo
@@ -196,7 +199,7 @@ cmd_clone() {
         menu_select "Select bookmark:" "${bookmark_lines[@]}"
 
         # Extract bookmark name from selected line
-        bookmark_name=$(echo "${bookmark_lines[$MENU_RESULT]}" | awk '{print $1}' | sed 's/:$//')
+        bookmark_name=$(echo "${bookmark_lines[$MENU_RESULT]}" | awk '{print $1}' | sed 's/:$//' | strip_ansi)
     fi
 
     # Create new working copy on selected bookmark
