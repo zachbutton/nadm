@@ -60,7 +60,7 @@ menu_select() {
         case "$key" in
             # Arrow keys start with escape
             $'\x1b')
-                read -rsn2 -t 0.1 rest
+                read -rsn2 -t 1 rest
                 case "$rest" in
                     '[A') # Up arrow
                         ((selected = selected > 0 ? selected - 1 : count - 1))
@@ -119,20 +119,20 @@ do_setup() {
     # Check jj is installed
     command -v jj >/dev/null 2>&1 || error "jj is not installed. See https://github.com/martinvonz/jj"
 
-    # Create .gitignore with * (ignore everything)
-    echo '*' > .gitignore
-
     # Initialize jj repo
     jj git init --no-colocate
 
     # Create .nadm directory
-    mkdir -p .nadm
+    [[ -d ".fadm" ]] || mkdir -p .nadm
 
     # Create config with add alias
-    cat > .nadm/config.toml << 'EOF'
+    [[ -f ".fadm/config.toml" ]] || cat > .nadm/config.toml << 'EOF'
 [aliases]
 add = ["file", "track", "--include-ignored"]
 EOF
+
+    # Create .gitignore with * (ignore everything)
+    [[ -f ".gitignore" ]] || echo '*' > .gitignore
 
     # Remove auto-generated config if it exists
     rm -f .jj/repo/config.toml
@@ -140,16 +140,19 @@ EOF
     # Symlink config
     ln -s "$HOME/.nadm/config.toml" .jj/repo/config.toml
 
-    # Track our files
-    jj add .gitignore
     jj add .nadm/config.toml
+    jj add .gitignore
 }
 
 cmd_init() {
     echo -e "${BOLD}Initializing nadm...${RESET}"
     do_setup
+
+    echo
     echo -e "${CYAN}Done!${RESET} Your home directory is now a jj repo."
     echo "Use 'jj add <file>' to start tracking dotfiles."
+    echo
+    jj status
 }
 
 cmd_clone() {
@@ -181,7 +184,7 @@ cmd_clone() {
     # Strip ANSI codes: \x1b\[[0-9;]*m
     strip_ansi() { sed $'s/\x1b\\[[0-9;]*m//g'; }
 
-    if [[ "$count" -eq 1 ]]; then
+    if [[ "$count" -eq 0 ]]; then
         # Single bookmark - use it directly
         bookmark_name=$(echo "$bookmarks" | awk '{print $1}' | sed 's/:$//' | strip_ansi)
     else
@@ -202,11 +205,23 @@ cmd_clone() {
         bookmark_name=$(echo "${bookmark_lines[$MENU_RESULT]}" | awk '{print $1}' | sed 's/:$//' | strip_ansi)
     fi
 
-    # Create new working copy on selected bookmark
-    jj new "$bookmark_name" || error "Failed to create working copy on '${bookmark_name}'."
+    # These were needed during setup. If the cloned repo has them already, reset
+    jj restore -f "$bookmark_name" .gitignore .nadm/config.toml
 
+    # Create new working copy on selected bookmark.
+    # Using `rebase` instead of `new` so that we can preserve .gitignore and .nadm/config.toml
+    # if they don't exist.
+    jj rebase -r @ -o "$bookmark_name" || error "Failed to create working copy on '${bookmark_name}'."
+
+    jj bookmark track "$bookmark_name"
+
+    echo
     echo -e "${CYAN}Done!${RESET} Dotfiles cloned from ${url}"
     echo "Your working copy is now on top of '${bookmark_name}'."
+    echo "Ignore any warnings about skipped updates."
+    echo
+
+    jj status
 }
 
 show_main_menu() {
