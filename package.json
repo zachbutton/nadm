@@ -1,6 +1,6 @@
 {
   "name": "nadm",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Not A Dotfile Manager - bootstrap jj as a dotfile manager",
   "main": "bin/nadm.js",
   "bin": {
@@ -13,5 +13,5 @@
   },
   "keywords": ["dotfiles", "jj", "jujutsu"],
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
