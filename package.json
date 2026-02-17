@@ -1,15 +1,13 @@
 {
   "name": "nadm",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Not A Dotfile Manager - bootstrap jj as a dotfile manager",
-  "main": "bin/nadm.js",
+  "main": "core.sh",
   "bin": {
-    "nadm": "./bin/nadm.js"
+    "nadm": "./core.sh"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node scripts/build.js",
-    "prepublishOnly": "npm run build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["dotfiles", "jj", "jujutsu"],
   "author": "",
