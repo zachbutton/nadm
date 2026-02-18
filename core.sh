@@ -33,23 +33,41 @@ do_setup() {
     # Create config with add/sync aliases
     cat > .nadm/config.toml << 'EOF'
 [aliases]
+
 add = ["util", "exec", "--", "bash", "-c", """
 #!/usr/bin/env bash
-printf '%s\n' "$@" >> .nadm/tracked
+
+printf '%s\n' "$@" | while IFS= read -r path; do
+    [[ -z "$path" ]] && continue
+	full_path=$(realpath $path)
+	relative_path="${full_path#"$HOME"/}"
+	echo $relative_path >> ~/.nadm/tracked
+done
+
 jj sync
 """, ""]
+
 sync = ["util", "exec", "--", "bash", "-c", """
 #!/usr/bin/env bash
-if [[ ! -f .nadm/tracked ]]; then
+if [[ ! -f ~/.nadm/tracked ]]; then
     exit 0
 fi
 
-jj sparse set --clear
-jj sparse set --add .nadm/
+# Untrack all files (need temp .gitignore)
+echo '*' > ~/.gitignore
+for path in $(jj file list)
+do
+    jj file untrack "$path"
+done
+rm ~/.gitignore
+
+# Clear and rebuild sparse list
+jj sparse set --clear --add .nadm
 while IFS= read -r path; do
     [[ -z "$path" ]] && continue
     jj sparse set --add "$path"
-done < .nadm/tracked
+done < ~/.nadm/tracked
+
 """, ""]
 EOF
 
