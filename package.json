@@ -1,6 +1,6 @@
 {
   "name": "nadm",
-  "version": "0.2.2",
+  "version": "0.3.2",
   "description": "Not A Dotfile Manager - bootstrap jj as a dotfile manager",
   "main": "core.sh",
   "bin": {
