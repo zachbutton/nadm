@@ -295,6 +295,8 @@ cmd_init() {
     echo -e "${BOLD}Initializing nadm...${RESET}"
 
 	do_setup
+	jj bookmark set main
+	jj commit -m 'initial nadm setup'
 
     echo
     echo -e "${CYAN}Done!${RESET} Your home directory is now a jj repo."
