@@ -1,15 +1,23 @@
 {
-  "name": "nadm",
-  "version": "0.3.2",
-  "description": "Not A Dotfile Manager - bootstrap jj as a dotfile manager",
-  "main": "core.sh",
-  "bin": {
-    "nadm": "./core.sh"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": ["dotfiles", "jj", "jujutsu"],
-  "author": "",
-  "license": "MIT"
+	"name": "nadm",
+	"version": "0.4.0",
+	"description": "Not A Dotfile Manager - bootstrap jj as a dotfile manager",
+	"main": "core.sh",
+	"bin": {
+		"nadm": "./core.sh"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"files": [
+		"/core.sh",
+		"/tests"
+	],
+	"keywords": [
+		"dotfiles",
+		"jj",
+		"jujutsu"
+	],
+	"author": "",
+	"license": "MIT"
 }
