@@ -57,7 +57,7 @@ canonicalize_path() {
         raw="$PWD/$raw"
     fi
 
-    full_path="$(realpath)"
+    full_path="$(realpath $raw)"
 
     case "$full_path" in
         "$HOME")
